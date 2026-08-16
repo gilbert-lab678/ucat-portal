@@ -6,40 +6,58 @@ import { createClient } from '@/lib/supabase'
 
 export default function LoginSuccess() {
   const router = useRouter()
-  const [firstName, setFirstName] = useState('Student')
+  const [firstName, setFirstName] = useState('User')
   const [progressWidth, setProgressWidth] = useState('0%')
 
   useEffect(() => {
     const supabase = createClient()
 
-    const loadUser = async () => {
+    const loadUserAndRedirect = async () => {
+      // 1. Get auth user metadata for the name greeting
       const { data: { user } } = await supabase.auth.getUser()
+      let isAdminUser = false
+
       if (user) {
         const name =
           user.user_metadata?.first_name ||
           user.user_metadata?.firstName ||
           user.user_metadata?.name?.split(' ')[0] ||
-          'Student'
+          'User'
         setFirstName(name)
+
+        // 2. Fetch profile from database to determine the final destination route
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('is_admin')
+          .eq('id', user.id)
+          .single()
+
+        if (profile?.is_admin) {
+          isAdminUser = true
+        }
+      }
+
+      // 3. Smoothly fill the loading animation bar
+      const animationTimer = setTimeout(() => {
+        setProgressWidth('100%')
+      }, 50)
+
+      // 4. Wait exactly 2.8s for the animation before routing to the specific portal destination
+      const redirectTimer = setTimeout(() => {
+        if (isAdminUser) {
+          router.push('/admin')
+        } else {
+          router.push('/dashboard')
+        }
+      }, 2800)
+
+      return () => {
+        clearTimeout(animationTimer)
+        clearTimeout(redirectTimer)
       }
     }
 
-    loadUser()
-
-    // Smoothly fill the loading animation bar
-    const animationTimer = setTimeout(() => {
-      setProgressWidth('100%')
-    }, 50)
-
-    // Wait exactly 2.8s for the animation before moving to dashboard
-    const redirectTimer = setTimeout(() => {
-      router.push('/dashboard')
-    }, 2800)
-
-    return () => {
-      clearTimeout(animationTimer)
-      clearTimeout(redirectTimer)
-    }
+    loadUserAndRedirect()
   }, [router])
 
   return (

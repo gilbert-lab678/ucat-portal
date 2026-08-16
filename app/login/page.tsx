@@ -56,11 +56,8 @@ export default function LoginPage() {
       return
     }
 
-    if (profile.is_admin) {
-      router.push('/admin')
-    } else {
-      router.push('/login/success')
-    }
+    // Funnel all successful accounts straight into the animation route chain
+    router.push('/login/success')
   }
 
   return (

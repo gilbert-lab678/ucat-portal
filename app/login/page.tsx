@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 
@@ -15,7 +15,13 @@ export default function LoginPage() {
   const [isLoginSuccess, setIsLoginSuccess] = useState(false)
   const [firstName, setFirstName] = useState('Student')
   
+  // Mounted check to prevent Vercel SSR styling/hydration discrepancies
+  const [isMounted, setIsMounted] = useState(false)
   const router = useRouter()
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -64,7 +70,7 @@ export default function LoginPage() {
     if (profile.is_admin) {
       router.push('/admin')
     } else {
-      // Extract user's first name safely for the greeting card view
+      // Extract user's first name safely for greeting card
       const name =
         data.user?.user_metadata?.first_name ||
         data.user?.user_metadata?.firstName ||
@@ -81,18 +87,18 @@ export default function LoginPage() {
     }
   }
 
-  // --- EMBEDDED SUCCESS VIEW LAYER (Tailwind Production Ready) ---
-  if (isLoginSuccess) {
+  // --- EMBEDDED SUCCESS VIEW LAYER (Production-Safe Styles) ---
+  if (isLoginSuccess && isMounted) {
     return (
       <main className="min-h-screen bg-[#080b14] text-white flex items-center justify-center overflow-hidden relative font-sans select-none">
         
         {/* Background Glow Ring */}
         <div className="absolute w-[650px] h-[650px] rounded-full bg-blue-500/10 blur-[120px] animate-pulse duration-[4000ms]" />
 
-        <div className="relative z-10 text-center animate-[fadeIn_0.7s_cubic-bezier(0.2,0.8,0.2,1)]">
+        <div className="relative z-10 text-center custom-fade-in">
           
           {/* Checked Icon Circle */}
-          <div className="w-[90px] h-[90px] mx-auto mb-7 rounded-full relative bg-gradient-to-br from-[#5865f2] to-[#7c5cff] flex items-center justify-center shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_0_55px_rgba(88,101,242,0.45)] animate-[scaleUp_0.7s_cubic-bezier(0.17,0.89,0.32,1.49)]">
+          <div className="w-[90px] h-[90px] mx-auto mb-7 rounded-full relative bg-gradient-to-br from-[#5865f2] to-[#7c5cff] flex items-center justify-center shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_0_55px_rgba(88,101,242,0.45)] custom-scale-up">
             
             {/* Pulsing Outer Circle Accent */}
             <div className="absolute -inset-3 rounded-full border border-[#7c5cff]/30 animate-ping opacity-25" />
@@ -131,13 +137,14 @@ export default function LoginPage() {
             <div 
               className="h-full bg-gradient-to-r from-[#5865f2] to-[#9b7cff] rounded-full" 
               style={{
+                width: '0%',
                 animation: 'progressFill 2.8s cubic-bezier(0.4, 0, 0.2, 1) forwards'
               }}
             />
           </div>
         </div>
 
-        {/* Safe production injection for layout keyframe configs */}
+        {/* Global injection block scoped explicitly to ensure Vercel compiles it regardless of client variations */}
         <style dangerouslySetInnerHTML={{__html: `
           @keyframes progressFill {
             from { width: 0%; }
@@ -151,6 +158,12 @@ export default function LoginPage() {
           @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
+          }
+          .custom-scale-up {
+            animation: scaleUp 0.7s cubic-bezier(0.17, 0.89, 0.32, 1.49) forwards;
+          }
+          .custom-fade-in {
+            animation: fadeIn 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
           }
         `}} />
       </main>

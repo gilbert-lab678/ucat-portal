@@ -11,11 +11,9 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   
-  // States to track embedded success animation step
+  // Track states for live view transition
   const [isLoginSuccess, setIsLoginSuccess] = useState(false)
   const [firstName, setFirstName] = useState('Student')
-  
-  // Mounted check to prevent Vercel SSR styling/hydration discrepancies
   const [isMounted, setIsMounted] = useState(false)
   const router = useRouter()
 
@@ -70,7 +68,7 @@ export default function LoginPage() {
     if (profile.is_admin) {
       router.push('/admin')
     } else {
-      // Extract user's first name safely for greeting card
+      // Safely parse out metadata name parameters
       const name =
         data.user?.user_metadata?.first_name ||
         data.user?.user_metadata?.firstName ||
@@ -80,97 +78,18 @@ export default function LoginPage() {
       setFirstName(name)
       setIsLoginSuccess(true)
 
-      // Hold view context for 2.8 seconds before navigating away
+      // Hold rendering frame on Vercel environment before physical router navigation
       setTimeout(() => {
         router.push('/dashboard')
       }, 2800)
     }
   }
 
-  // --- EMBEDDED SUCCESS VIEW LAYER (Production-Safe Styles) ---
+  // --- RENDERING LAYER REDIRECT ---
   if (isLoginSuccess && isMounted) {
-    return (
-      <main className="min-h-screen bg-[#080b14] text-white flex items-center justify-center overflow-hidden relative font-sans select-none">
-        
-        {/* Background Glow Ring */}
-        <div className="absolute w-[650px] h-[650px] rounded-full bg-blue-500/10 blur-[120px] animate-pulse duration-[4000ms]" />
-
-        <div className="relative z-10 text-center custom-fade-in">
-          
-          {/* Checked Icon Circle */}
-          <div className="w-[90px] h-[90px] mx-auto mb-7 rounded-full relative bg-gradient-to-br from-[#5865f2] to-[#7c5cff] flex items-center justify-center shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_0_55px_rgba(88,101,242,0.45)] custom-scale-up">
-            
-            {/* Pulsing Outer Circle Accent */}
-            <div className="absolute -inset-3 rounded-full border border-[#7c5cff]/30 animate-ping opacity-25" />
-            
-            {/* Success Checkmark Element */}
-            <svg 
-              className="w-10 h-10 text-white" 
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24" 
-              strokeWidth="3.5"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-
-          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-3 leading-tight">
-            Sign in successful
-          </h1>
-
-          <p className="text-[#9da4b8] text-base sm:text-lg mb-9">
-            Welcome back, <span className="text-white font-semibold">{firstName}</span>.
-          </p>
-
-          <div className="flex items-center justify-center gap-2 text-[#858ca0] text-sm mb-4">
-            <span>Preparing your dashboard</span>
-            <div className="flex gap-1 items-center pt-1">
-              <span className="w-1 h-1 rounded-full bg-[#8b7cff] animate-bounce [animation-delay:-0.3s]" />
-              <span className="w-1 h-1 rounded-full bg-[#8b7cff] animate-bounce [animation-delay:-0.15s]" />
-              <span className="w-1 h-1 rounded-full bg-[#8b7cff] animate-bounce" />
-            </div>
-          </div>
-
-          {/* Loading Progress Bar Tracking */}
-          <div className="w-[210px] sm:w-[240px] h-[3px] mx-auto bg-white/10 rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-gradient-to-r from-[#5865f2] to-[#9b7cff] rounded-full" 
-              style={{
-                width: '0%',
-                animation: 'progressFill 2.8s cubic-bezier(0.4, 0, 0.2, 1) forwards'
-              }}
-            />
-          </div>
-        </div>
-
-        {/* Global injection block scoped explicitly to ensure Vercel compiles it regardless of client variations */}
-        <style dangerouslySetInnerHTML={{__html: `
-          @keyframes progressFill {
-            from { width: 0%; }
-            to { width: 100%; }
-          }
-          @keyframes scaleUp {
-            0% { transform: scale(0.3); opacity: 0; }
-            70% { transform: scale(1.05); }
-            100% { transform: scale(1); opacity: 1; }
-          }
-          @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-          }
-          .custom-scale-up {
-            animation: scaleUp 0.7s cubic-bezier(0.17, 0.89, 0.32, 1.49) forwards;
-          }
-          .custom-fade-in {
-            animation: fadeIn 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-          }
-        `}} />
-      </main>
-    )
+    return <SuccessView firstName={firstName} />
   }
 
-  // --- STANDARD LOGIN FORM LAYOUT ---
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-zinc-900">
       <div className="w-full max-w-sm rounded-lg border border-zinc-200 dark:border-zinc-700 p-8">
@@ -221,5 +140,63 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+// Separate subcomponent to isolate compilation and force animation hooks to process cleanly on Vercel CDN
+function SuccessView({ firstName }: { firstName: string }) {
+  const [progressWidth, setProgressWidth] = useState('0%')
+
+  useEffect(() => {
+    // Deliberately delay progress calculation frame to trigger execution after mounting completes
+    const frame = setTimeout(() => setProgressWidth('100%'), 50)
+    return () => clearTimeout(frame)
+  }, [])
+
+  return (
+    <main className="min-h-screen w-full bg-[#080b14] text-white flex items-center justify-center overflow-hidden relative font-sans select-none">
+      {/* Background Radial Glow */}
+      <div className="absolute w-[650px] h-[650px] rounded-full bg-blue-500/10 blur-[120px] animate-pulse duration-[4000ms]" />
+
+      <div className="relative z-10 text-center transition-all duration-700 ease-out transform translate-y-0 opacity-100">
+        
+        {/* Checked Icon Circle Wrapper */}
+        <div className="w-[90px] h-[90px] mx-auto mb-7 rounded-full relative bg-gradient-to-br from-[#5865f2] to-[#7c5cff] flex items-center justify-center shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_0_55px_rgba(88,101,242,0.45)] transition-transform duration-500 scale-100">
+          <div className="absolute -inset-3 rounded-full border border-[#7c5cff]/30 animate-ping opacity-25" />
+          
+          <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3.5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+
+        <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-3 leading-tight">
+          Sign in successful
+        </h1>
+
+        <p className="text-[#9da4b8] text-base sm:text-lg mb-9">
+          Welcome back, <span className="text-white font-semibold">{firstName}</span>.
+        </p>
+
+        <div className="flex items-center justify-center gap-2 text-[#858ca0] text-sm mb-4">
+          <span>Preparing your dashboard</span>
+          <div className="flex gap-1 items-center pt-1">
+            <span className="w-1 h-1 rounded-full bg-[#8b7cff] animate-bounce [animation-delay:-0.3s]" />
+            <span className="w-1 h-1 rounded-full bg-[#8b7cff] animate-bounce [animation-delay:-0.15s]" />
+            <span className="w-1 h-1 rounded-full bg-[#8b7cff] animate-bounce" />
+          </div>
+        </div>
+
+        {/* Dynamic inline calculation for progress loading frame tracking */}
+        <div className="w-[210px] sm:w-[240px] h-[3px] mx-auto bg-white/10 rounded-full overflow-hidden">
+          <div 
+            className="h-full bg-gradient-to-r from-[#5865f2] to-[#9b7cff] rounded-full transition-all ease-out" 
+            style={{ 
+              width: progressWidth,
+              transitionDuration: '2800ms'
+            }}
+          />
+        </div>
+      </div>
+    </main>
   )
 }

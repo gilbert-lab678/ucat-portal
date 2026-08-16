@@ -11,25 +11,37 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   
-  // States to hold layout screens
   const [isLoginSuccess, setIsLoginSuccess] = useState(false)
   const [firstName, setFirstName] = useState('Student')
   const [progressWidth, setProgressWidth] = useState('0%')
   
   const router = useRouter()
 
-  // This hook forces Vercel to physically render the view and wait 2.8 seconds BEFORE pushing
+  // 1. Force state persistence check on initial load to block premature global middleware redirects
+  useEffect(() => {
+    const isShowingSuccess = localStorage.getItem('auth_success_pending')
+    const savedName = localStorage.getItem('auth_success_name')
+    
+    if (isShowingSuccess === 'true') {
+      setIsLoginSuccess(true)
+      if (savedName) setFirstName(savedName)
+    }
+  }, [])
+
+  // 2. Handle the explicit timing loop safely decoupled from asynchronous router pre-rendering locks
   useEffect(() => {
     if (!isLoginSuccess) return
 
-    // 1. Instantly trigger the visual loading bar transition
     const animationFrame = setTimeout(() => {
       setProgressWidth('100%')
     }, 50)
 
-    // 2. Wait exactly 2.8 seconds for the screen layout to display before executing the push routing
     const redirectTimer = setTimeout(() => {
-      router.push('/dashboard')
+      localStorage.removeItem('auth_success_pending')
+      localStorage.removeItem('auth_success_name')
+      
+      // Append a cache-busting timestamp string parameter to bypass edge routing checks
+      router.push(`/dashboard?v=${Date.now()}`)
     }, 2800)
 
     return () => {
@@ -85,33 +97,30 @@ export default function LoginPage() {
     if (profile.is_admin) {
       router.push('/admin')
     } else {
-      // Safely parse name criteria out
       const name =
         data.user?.user_metadata?.first_name ||
         data.user?.user_metadata?.firstName ||
         data.user?.user_metadata?.name?.split(' ')[0] ||
         'Student'
       
-      setFirstName(name)
+      // Explicitly serialize state into persistent browser storage before the rendering thread updates
+      localStorage.setItem('auth_success_pending', 'true')
+      localStorage.setItem('auth_success_name', name)
       
-      // Stop execution here and hand control over to the useEffect timer hook above
+      setFirstName(name)
       setIsLoginSuccess(true)
     }
   }
 
-  // --- SCREEN 2: SUCCESS VIEW LAYOUT (Rendered explicitly when state flips) ---
+  // --- SCREEN 2: DYNAMIC SUCCESS ANIMATION RENDER LAYER ---
   if (isLoginSuccess) {
     return (
       <main className="min-h-screen w-full bg-[#080b14] text-white flex items-center justify-center overflow-hidden relative font-sans select-none">
-        {/* Background Radial Glow */}
         <div className="absolute w-[650px] h-[650px] rounded-full bg-blue-500/10 blur-[120px] animate-pulse duration-[4000ms]" />
 
-        <div className="relative z-10 text-center transition-all duration-700 ease-out transform translate-y-0 opacity-100">
-          
-          {/* Checked Icon Circle */}
+        <div className="relative z-10 text-center">
           <div className="w-[90px] h-[90px] mx-auto mb-7 rounded-full relative bg-gradient-to-br from-[#5865f2] to-[#7c5cff] flex items-center justify-center shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_0_55px_rgba(88,101,242,0.45)]">
             <div className="absolute -inset-3 rounded-full border border-[#7c5cff]/30 animate-ping opacity-25" />
-            
             <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
             </svg>
@@ -134,7 +143,6 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Progress Tracker Slider line bar */}
           <div className="w-[210px] sm:w-[240px] h-[3px] mx-auto bg-white/10 rounded-full overflow-hidden">
             <div 
               className="h-full bg-gradient-to-r from-[#5865f2] to-[#9b7cff] rounded-full transition-all ease-out" 

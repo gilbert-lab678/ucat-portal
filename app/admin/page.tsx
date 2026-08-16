@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 
+export const dynamic = 'force-dynamic'
+
 type Profile = {
   id: string
   full_name: string

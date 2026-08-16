@@ -11,15 +11,32 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   
-  // Track states for live view transition
+  // States to hold layout screens
   const [isLoginSuccess, setIsLoginSuccess] = useState(false)
   const [firstName, setFirstName] = useState('Student')
-  const [isMounted, setIsMounted] = useState(false)
+  const [progressWidth, setProgressWidth] = useState('0%')
+  
   const router = useRouter()
 
+  // This hook forces Vercel to physically render the view and wait 2.8 seconds BEFORE pushing
   useEffect(() => {
-    setIsMounted(true)
-  }, [])
+    if (!isLoginSuccess) return
+
+    // 1. Instantly trigger the visual loading bar transition
+    const animationFrame = setTimeout(() => {
+      setProgressWidth('100%')
+    }, 50)
+
+    // 2. Wait exactly 2.8 seconds for the screen layout to display before executing the push routing
+    const redirectTimer = setTimeout(() => {
+      router.push('/dashboard')
+    }, 2800)
+
+    return () => {
+      clearTimeout(animationFrame)
+      clearTimeout(redirectTimer)
+    }
+  }, [isLoginSuccess, router])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -68,7 +85,7 @@ export default function LoginPage() {
     if (profile.is_admin) {
       router.push('/admin')
     } else {
-      // Safely parse out metadata name parameters
+      // Safely parse name criteria out
       const name =
         data.user?.user_metadata?.first_name ||
         data.user?.user_metadata?.firstName ||
@@ -76,20 +93,63 @@ export default function LoginPage() {
         'Student'
       
       setFirstName(name)
+      
+      // Stop execution here and hand control over to the useEffect timer hook above
       setIsLoginSuccess(true)
-
-      // Hold rendering frame on Vercel environment before physical router navigation
-      setTimeout(() => {
-        router.push('/dashboard')
-      }, 2800)
     }
   }
 
-  // --- RENDERING LAYER REDIRECT ---
-  if (isLoginSuccess && isMounted) {
-    return <SuccessView firstName={firstName} />
+  // --- SCREEN 2: SUCCESS VIEW LAYOUT (Rendered explicitly when state flips) ---
+  if (isLoginSuccess) {
+    return (
+      <main className="min-h-screen w-full bg-[#080b14] text-white flex items-center justify-center overflow-hidden relative font-sans select-none">
+        {/* Background Radial Glow */}
+        <div className="absolute w-[650px] h-[650px] rounded-full bg-blue-500/10 blur-[120px] animate-pulse duration-[4000ms]" />
+
+        <div className="relative z-10 text-center transition-all duration-700 ease-out transform translate-y-0 opacity-100">
+          
+          {/* Checked Icon Circle */}
+          <div className="w-[90px] h-[90px] mx-auto mb-7 rounded-full relative bg-gradient-to-br from-[#5865f2] to-[#7c5cff] flex items-center justify-center shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_0_55px_rgba(88,101,242,0.45)]">
+            <div className="absolute -inset-3 rounded-full border border-[#7c5cff]/30 animate-ping opacity-25" />
+            
+            <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+
+          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-3 leading-tight">
+            Sign in successful
+          </h1>
+
+          <p className="text-[#9da4b8] text-base sm:text-lg mb-9">
+            Welcome back, <span className="text-white font-semibold">{firstName}</span>.
+          </p>
+
+          <div className="flex items-center justify-center gap-2 text-[#858ca0] text-sm mb-4">
+            <span>Preparing your dashboard</span>
+            <div className="flex gap-1 items-center pt-1">
+              <span className="w-1 h-1 rounded-full bg-[#8b7cff] animate-bounce [animation-delay:-0.3s]" />
+              <span className="w-1 h-1 rounded-full bg-[#8b7cff] animate-bounce [animation-delay:-0.15s]" />
+              <span className="w-1 h-1 rounded-full bg-[#8b7cff] animate-bounce" />
+            </div>
+          </div>
+
+          {/* Progress Tracker Slider line bar */}
+          <div className="w-[210px] sm:w-[240px] h-[3px] mx-auto bg-white/10 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-gradient-to-r from-[#5865f2] to-[#9b7cff] rounded-full transition-all ease-out" 
+              style={{ 
+                width: progressWidth,
+                transitionDuration: '2800ms'
+              }}
+            />
+          </div>
+        </div>
+      </main>
+    )
   }
 
+  // --- SCREEN 1: STANDARD LOGIN FORM LAYOUT ---
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-zinc-900">
       <div className="w-full max-w-sm rounded-lg border border-zinc-200 dark:border-zinc-700 p-8">
@@ -140,63 +200,5 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
-  )
-}
-
-// Separate subcomponent to isolate compilation and force animation hooks to process cleanly on Vercel CDN
-function SuccessView({ firstName }: { firstName: string }) {
-  const [progressWidth, setProgressWidth] = useState('0%')
-
-  useEffect(() => {
-    // Deliberately delay progress calculation frame to trigger execution after mounting completes
-    const frame = setTimeout(() => setProgressWidth('100%'), 50)
-    return () => clearTimeout(frame)
-  }, [])
-
-  return (
-    <main className="min-h-screen w-full bg-[#080b14] text-white flex items-center justify-center overflow-hidden relative font-sans select-none">
-      {/* Background Radial Glow */}
-      <div className="absolute w-[650px] h-[650px] rounded-full bg-blue-500/10 blur-[120px] animate-pulse duration-[4000ms]" />
-
-      <div className="relative z-10 text-center transition-all duration-700 ease-out transform translate-y-0 opacity-100">
-        
-        {/* Checked Icon Circle Wrapper */}
-        <div className="w-[90px] h-[90px] mx-auto mb-7 rounded-full relative bg-gradient-to-br from-[#5865f2] to-[#7c5cff] flex items-center justify-center shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_0_55px_rgba(88,101,242,0.45)] transition-transform duration-500 scale-100">
-          <div className="absolute -inset-3 rounded-full border border-[#7c5cff]/30 animate-ping opacity-25" />
-          
-          <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3.5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-          </svg>
-        </div>
-
-        <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-3 leading-tight">
-          Sign in successful
-        </h1>
-
-        <p className="text-[#9da4b8] text-base sm:text-lg mb-9">
-          Welcome back, <span className="text-white font-semibold">{firstName}</span>.
-        </p>
-
-        <div className="flex items-center justify-center gap-2 text-[#858ca0] text-sm mb-4">
-          <span>Preparing your dashboard</span>
-          <div className="flex gap-1 items-center pt-1">
-            <span className="w-1 h-1 rounded-full bg-[#8b7cff] animate-bounce [animation-delay:-0.3s]" />
-            <span className="w-1 h-1 rounded-full bg-[#8b7cff] animate-bounce [animation-delay:-0.15s]" />
-            <span className="w-1 h-1 rounded-full bg-[#8b7cff] animate-bounce" />
-          </div>
-        </div>
-
-        {/* Dynamic inline calculation for progress loading frame tracking */}
-        <div className="w-[210px] sm:w-[240px] h-[3px] mx-auto bg-white/10 rounded-full overflow-hidden">
-          <div 
-            className="h-full bg-gradient-to-r from-[#5865f2] to-[#9b7cff] rounded-full transition-all ease-out" 
-            style={{ 
-              width: progressWidth,
-              transitionDuration: '2800ms'
-            }}
-          />
-        </div>
-      </div>
-    </main>
   )
 }

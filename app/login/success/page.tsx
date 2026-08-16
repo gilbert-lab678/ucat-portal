@@ -1,64 +1,44 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase'
+import { useEffect, useState, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 
-export default function LoginSuccess() {
+// We separate the layout into a Content component wrapped in a Suspense boundary.
+// Next.js requires a Suspense boundary whenever you use 'useSearchParams' on a client page.
+function SuccessContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [firstName, setFirstName] = useState('User')
   const [progressWidth, setProgressWidth] = useState('0%')
 
   useEffect(() => {
-    const supabase = createClient()
+    // Safely pull the name and destination variables out using Next.js hooks
+    const urlName = searchParams.get('name')
+    const urlRole = searchParams.get('role')
 
-    const loadUserAndRedirect = async () => {
-      // 1. Get active session user metadata immediately to prevent fallback text flashing
-      const { data: { user } } = await supabase.auth.getUser()
-      let isAdminUser = false
-
-      if (user) {
-        const name =
-          user.user_metadata?.first_name ||
-          user.user_metadata?.firstName ||
-          user.user_metadata?.name?.split(' ')[0] ||
-          'User'
-        setFirstName(name)
-
-        // 2. Fetch database profile criteria concurrently while animations run
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('is_admin')
-          .eq('id', user.id)
-          .single()
-
-        if (profile?.is_admin) {
-          isAdminUser = true
-        }
-      }
-
-      // 3. Smoothly fill the loading animation bar layout
-      const animationTimer = setTimeout(() => {
-        setProgressWidth('100%')
-      }, 50)
-
-      // 4. Wait exactly 2.8s for the animation before routing to the specific portal destination
-      const redirectTimer = setTimeout(() => {
-        if (isAdminUser) {
-          router.push('/admin')
-        } else {
-          router.push('/dashboard')
-        }
-      }, 2800)
-
-      return () => {
-        clearTimeout(animationTimer)
-        clearTimeout(redirectTimer)
-      }
+    if (urlName) {
+      setFirstName(urlName)
     }
 
-    loadUserAndRedirect()
-  }, [router])
+    // Smoothly fill the loading animation bar layout right away
+    const animationTimer = setTimeout(() => {
+      setProgressWidth('100%')
+    }, 50)
+
+    // Wait exactly 2.8s for the animation before routing to the dashboard destination
+    const redirectTimer = setTimeout(() => {
+      if (urlRole === 'admin') {
+        router.push('/admin')
+      } else {
+        router.push('/dashboard')
+      }
+    }, 2800)
+
+    return () => {
+      clearTimeout(animationTimer)
+      clearTimeout(redirectTimer)
+    }
+  }, [router, searchParams])
 
   return (
     <main className="min-h-screen w-full bg-[#080b14] text-white flex items-center justify-center overflow-hidden relative font-sans select-none">
@@ -100,5 +80,18 @@ export default function LoginSuccess() {
         </div>
       </div>
     </main>
+  )
+}
+
+// Main page export wrapped in Suspense to satisfy Next.js compilation requirements
+export default function LoginSuccess() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen w-full bg-[#080b14] text-white flex items-center justify-center">
+        <p className="text-sm text-[#858ca0]">Loading routing context...</p>
+      </div>
+    }>
+      <SuccessContent />
+    </Suspense>
   )
 }

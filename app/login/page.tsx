@@ -30,9 +30,10 @@ export default function LoginPage() {
       return
     }
 
+    // Explicitly target your actual 'full_name' database column
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('status, is_admin')
+      .select('status, is_admin, full_name')
       .eq('id', data.user.id)
       .single()
 
@@ -56,8 +57,17 @@ export default function LoginPage() {
       return
     }
 
-    // Funnel all successful accounts straight into the animation route chain
-    router.push('/login/success')
+    // Pull the name out of your 'full_name' match or fallback safely
+    const rawName = profile.full_name || data.user?.user_metadata?.full_name || data.user?.user_metadata?.name || 'User'
+    
+    // Split on spaces and grab the first name string element (e.g., "Gilbert")
+    const cleanFirstName = rawName.split(' ')[0]
+
+    if (profile.is_admin) {
+      router.push(`/login/success?name=${encodeURIComponent(cleanFirstName)}&role=admin`)
+    } else {
+      router.push(`/login/success?name=${encodeURIComponent(cleanFirstName)}&role=student`)
+    }
   }
 
   return (

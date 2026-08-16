@@ -24,3 +24,407 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.success-page {
+    min-height: 100vh;
+    background: #080b14;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+}
+
+.background-glow {
+    position: absolute;
+    width: 700px;
+    height: 700px;
+    border-radius: 50%;
+    background: rgba(88, 101, 242, 0.12);
+    filter: blur(120px);
+    animation: glowPulse 4s ease-in-out infinite;
+}
+
+.success-container {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    animation: successEntrance 0.7s cubic-bezier(.2, .8, .2, 1);
+}
+
+.success-icon {
+    width: 90px;
+    height: 90px;
+    margin: 0 auto 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #5865f2, #7c5cff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow:
+        0 0 0 1px rgba(255,255,255,0.08),
+        0 0 50px rgba(88,101,242,0.4);
+    animation: iconPop 0.7s cubic-bezier(.17,.89,.32,1.49);
+}
+
+.success-icon::before {
+    content: "";
+    position: absolute;
+    width: 114px;
+    height: 114px;
+    border-radius: 50%;
+    border: 1px solid rgba(124,92,255,0.3);
+    animation: ring 2s ease-out infinite;
+}
+
+.checkmark {
+    width: 30px;
+    height: 17px;
+    border-left: 4px solid white;
+    border-bottom: 4px solid white;
+    transform: rotate(-45deg) scale(0);
+    animation: checkDraw 0.4s ease-out 0.4s forwards;
+}
+
+.success-container h1 {
+    font-size: 42px;
+    font-weight: 700;
+    letter-spacing: -1.5px;
+    margin: 0 0 10px;
+}
+
+.welcome {
+    color: #9da4b8;
+    font-size: 18px;
+    margin: 0 0 35px;
+}
+
+.welcome span {
+    color: white;
+    font-weight: 600;
+}
+
+.loading-text {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: #858ca0;
+    font-size: 14px;
+    margin-bottom: 16px;
+}
+
+.dots {
+    display: flex;
+    gap: 4px;
+}
+
+.dots span {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #7c5cff;
+    animation: dotPulse 1.2s infinite ease-in-out;
+}
+
+.dots span:nth-child(2) {
+    animation-delay: 0.15s;
+}
+
+.dots span:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.progress-container {
+    width: 240px;
+    height: 3px;
+    margin: auto;
+    background: rgba(255,255,255,0.08);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    width: 0%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #5865f2, #9b7cff);
+    animation: progress 2.8s cubic-bezier(.4,0,.2,1) forwards;
+}
+
+@keyframes successEntrance {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes iconPop {
+    0% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+    70% {
+        transform: scale(1.08);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes checkDraw {
+    to {
+        transform: rotate(-45deg) scale(1);
+    }
+}
+
+@keyframes ring {
+    0% {
+        transform: scale(0.9);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1.35);
+        opacity: 0;
+    }
+}
+
+@keyframes glowPulse {
+    0%, 100% {
+        opacity: 0.6;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+}
+
+@keyframes dotPulse {
+    0%, 60%, 100% {
+        opacity: 0.3;
+        transform: translateY(0);
+    }
+    30% {
+        opacity: 1;
+        transform: translateY(-3px);
+    }
+}
+
+@keyframes progress {
+    from {
+        width: 0%;
+    }
+    to {
+        width: 100%;
+    }
+}
+
+
+.success-page {
+    min-height: 100vh;
+    background: #080b14;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+}
+
+.background-glow {
+    position: absolute;
+    width: 700px;
+    height: 700px;
+    border-radius: 50%;
+    background: rgba(88, 101, 242, 0.12);
+    filter: blur(120px);
+    animation: glowPulse 4s ease-in-out infinite;
+}
+
+.success-container {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    animation: successEntrance 0.7s cubic-bezier(.2, .8, .2, 1);
+}
+
+.success-icon {
+    width: 90px;
+    height: 90px;
+    margin: 0 auto 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #5865f2, #7c5cff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow:
+        0 0 0 1px rgba(255,255,255,0.08),
+        0 0 50px rgba(88,101,242,0.4);
+    animation: iconPop 0.7s cubic-bezier(.17,.89,.32,1.49);
+}
+
+.success-icon::before {
+    content: "";
+    position: absolute;
+    width: 114px;
+    height: 114px;
+    border-radius: 50%;
+    border: 1px solid rgba(124,92,255,0.3);
+    animation: ring 2s ease-out infinite;
+}
+
+.checkmark {
+    width: 30px;
+    height: 17px;
+    border-left: 4px solid white;
+    border-bottom: 4px solid white;
+    transform: rotate(-45deg) scale(0);
+    animation: checkDraw 0.4s ease-out 0.4s forwards;
+}
+
+.success-container h1 {
+    font-size: 42px;
+    font-weight: 700;
+    letter-spacing: -1.5px;
+    margin: 0 0 10px;
+}
+
+.welcome {
+    color: #9da4b8;
+    font-size: 18px;
+    margin: 0 0 35px;
+}
+
+.welcome span {
+    color: white;
+    font-weight: 600;
+}
+
+.loading-text {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: #858ca0;
+    font-size: 14px;
+    margin-bottom: 16px;
+}
+
+.dots {
+    display: flex;
+    gap: 4px;
+}
+
+.dots span {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #7c5cff;
+    animation: dotPulse 1.2s infinite ease-in-out;
+}
+
+.dots span:nth-child(2) {
+    animation-delay: 0.15s;
+}
+
+.dots span:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.progress-container {
+    width: 240px;
+    height: 3px;
+    margin: auto;
+    background: rgba(255,255,255,0.08);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    width: 0%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #5865f2, #9b7cff);
+    animation: progress 2.8s cubic-bezier(.4,0,.2,1) forwards;
+}
+
+@keyframes successEntrance {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes iconPop {
+    0% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+    70% {
+        transform: scale(1.08);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes checkDraw {
+    to {
+        transform: rotate(-45deg) scale(1);
+    }
+}
+
+@keyframes ring {
+    0% {
+        transform: scale(0.9);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1.35);
+        opacity: 0;
+    }
+}
+
+@keyframes glowPulse {
+    0%, 100% {
+        opacity: 0.6;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+}
+
+@keyframes dotPulse {
+    0%, 60%, 100% {
+        opacity: 0.3;
+        transform: translateY(0);
+    }
+    30% {
+        opacity: 1;
+        transform: translateY(-3px);
+    }
+}
+
+@keyframes progress {
+    from {
+        width: 0%;
+    }
+    to {
+        width: 100%;
+    }
+}
+

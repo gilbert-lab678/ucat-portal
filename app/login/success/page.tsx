@@ -13,7 +13,7 @@ export default function LoginSuccess() {
     const supabase = createClient()
 
     const loadUserAndRedirect = async () => {
-      // 1. Get auth user metadata for the name greeting
+      // 1. Get active session user metadata immediately to prevent fallback text flashing
       const { data: { user } } = await supabase.auth.getUser()
       let isAdminUser = false
 
@@ -25,7 +25,7 @@ export default function LoginSuccess() {
           'User'
         setFirstName(name)
 
-        // 2. Fetch profile from database to determine the final destination route
+        // 2. Fetch database profile criteria concurrently while animations run
         const { data: profile } = await supabase
           .from('profiles')
           .select('is_admin')
@@ -37,7 +37,7 @@ export default function LoginSuccess() {
         }
       }
 
-      // 3. Smoothly fill the loading animation bar
+      // 3. Smoothly fill the loading animation bar layout
       const animationTimer = setTimeout(() => {
         setProgressWidth('100%')
       }, 50)

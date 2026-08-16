@@ -11,7 +11,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   
-  // New States to handle embedding the success view directly
+  // States to track embedded success animation step
   const [isLoginSuccess, setIsLoginSuccess] = useState(false)
   const [firstName, setFirstName] = useState('Student')
   
@@ -64,7 +64,7 @@ export default function LoginPage() {
     if (profile.is_admin) {
       router.push('/admin')
     } else {
-      // Extract user's name for the success card animation
+      // Extract user's first name safely for the greeting card view
       const name =
         data.user?.user_metadata?.first_name ||
         data.user?.user_metadata?.firstName ||
@@ -72,166 +72,87 @@ export default function LoginPage() {
         'Student'
       
       setFirstName(name)
-      // Switch the UI screen to the success layout immediately
       setIsLoginSuccess(true)
 
-      // Hold execution here for 2.8 seconds before physically routing away
+      // Hold view context for 2.8 seconds before navigating away
       setTimeout(() => {
         router.push('/dashboard')
       }, 2800)
     }
   }
 
-  // --- EMBEDDED SUCCESS VIEW LAYER ---
+  // --- EMBEDDED SUCCESS VIEW LAYER (Tailwind Production Ready) ---
   if (isLoginSuccess) {
     return (
-      <main
-        style={{
-          minHeight: '100vh',
-          background: '#080b14',
-          color: 'white',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          overflow: 'hidden',
-          position: 'relative',
-          fontFamily: 'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-        }}
-      >
-        <style jsx>{`
-          .backgroundGlow {
-            position: absolute;
-            width: 650px;
-            height: 650px;
-            border-radius: 50%;
-            background: rgba(88, 101, 242, 0.14);
-            filter: blur(120px);
-            animation: glowPulse 4s ease-in-out infinite;
-          }
-          .container {
-            position: relative;
-            z-index: 2;
-            text-align: center;
-            animation: entrance 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
-          }
-          .icon {
-            width: 90px;
-            height: 90px;
-            margin: 0 auto 28px;
-            border-radius: 50%;
-            position: relative;
-            background: linear-gradient(135deg, #5865f2, #7c5cff);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 0 55px rgba(88, 101, 242, 0.45);
-            animation: pop 0.7s cubic-bezier(0.17, 0.89, 0.32, 1.49);
-          }
-          .icon::before {
-            content: '';
-            position: absolute;
-            inset: -12px;
-            border-radius: 50%;
-            border: 1px solid rgba(124, 92, 255, 0.3);
-            animation: ring 2s ease-out infinite;
-          }
-          .check {
-            width: 31px;
-            height: 18px;
-            border-left: 4px solid white;
-            border-bottom: 4px solid white;
-            transform: rotate(-45deg) scale(0);
-            animation: check 0.4s ease-out 0.4s forwards;
-          }
-          h1 {
-            font-size: 42px;
-            line-height: 1.1;
-            font-weight: 700;
-            letter-spacing: -1.5px;
-            margin: 0 0 12px;
-          }
-          .welcome {
-            color: #9da4b8;
-            font-size: 18px;
-            margin: 0 0 34px;
-          }
-          .welcome span {
-            color: white;
-            font-weight: 600;
-          }
-          .loading {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            color: #858ca0;
-            font-size: 14px;
-            margin-bottom: 16px;
-          }
-          .dots {
-            display: flex;
-            gap: 4px;
-          }
-          .dots span {
-            width: 4px;
-            height: 4px;
-            border-radius: 50%;
-            background: #8b7cff;
-            animation: dots 1.2s infinite ease-in-out;
-          }
-          .dots span:nth-child(2) { animation-delay: 0.15s; }
-          .dots span:nth-child(3) { animation-delay: 0.3s; }
-          .progress {
-            width: 240px;
-            height: 3px;
-            margin: 0 auto;
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 999px;
-            overflow: hidden;
-          }
-          .progressBar {
-            height: 100%;
-            width: 0;
-            border-radius: inherit;
-            background: linear-gradient(90deg, #5865f2, #9b7cff);
-            animation: progress 2.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-          }
-          @keyframes entrance { from { opacity: 0; transform: translateY(20px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
-          @keyframes pop { 0% { opacity: 0; transform: scale(0.3); } 70% { transform: scale(1.08); } 100% { opacity: 1; transform: scale(1); } }
-          @keyframes check { to { transform: rotate(-45deg) scale(1); } }
-          @keyframes ring { 0% { transform: scale(0.9); opacity: 0.8; } 100% { transform: scale(1.35); opacity: 0; } }
-          @keyframes glowPulse { 0%, 100% { opacity: 0.6; transform: scale(1); } 50% { opacity: 1; transform: scale(1.1); } }
-          @keyframes dots { 0%, 60%, 100% { opacity: 0.3; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-3px); } }
-          @keyframes progress { from { width: 0; } to { width: 100%; } }
-          @media (max-width: 600px) { h1 { font-size: 32px; } .welcome { font-size: 16px; } .progress { width: 210px; } }
-        `}</style>
+      <main className="min-h-screen bg-[#080b14] text-white flex items-center justify-center overflow-hidden relative font-sans select-none">
+        
+        {/* Background Glow Ring */}
+        <div className="absolute w-[650px] h-[650px] rounded-full bg-blue-500/10 blur-[120px] animate-pulse duration-[4000ms]" />
 
-        <div className="backgroundGlow" />
-
-        <div className="container">
-          <div className="icon">
-            <div className="check" />
+        <div className="relative z-10 text-center animate-[fadeIn_0.7s_cubic-bezier(0.2,0.8,0.2,1)]">
+          
+          {/* Checked Icon Circle */}
+          <div className="w-[90px] h-[90px] mx-auto mb-7 rounded-full relative bg-gradient-to-br from-[#5865f2] to-[#7c5cff] flex items-center justify-center shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_0_55px_rgba(88,101,242,0.45)] animate-[scaleUp_0.7s_cubic-bezier(0.17,0.89,0.32,1.49)]">
+            
+            {/* Pulsing Outer Circle Accent */}
+            <div className="absolute -inset-3 rounded-full border border-[#7c5cff]/30 animate-ping opacity-25" />
+            
+            {/* Success Checkmark Element */}
+            <svg 
+              className="w-10 h-10 text-white" 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24" 
+              strokeWidth="3.5"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
           </div>
 
-          <h1>Sign in successful</h1>
+          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-3 leading-tight">
+            Sign in successful
+          </h1>
 
-          <p className="welcome">
-            Welcome back, <span>{firstName}</span>.
+          <p className="text-[#9da4b8] text-base sm:text-lg mb-9">
+            Welcome back, <span className="text-white font-semibold">{firstName}</span>.
           </p>
 
-          <div className="loading">
+          <div className="flex items-center justify-center gap-2 text-[#858ca0] text-sm mb-4">
             <span>Preparing your dashboard</span>
-            <div className="dots">
-              <span />
-              <span />
-              <span />
+            <div className="flex gap-1 items-center pt-1">
+              <span className="w-1 h-1 rounded-full bg-[#8b7cff] animate-bounce [animation-delay:-0.3s]" />
+              <span className="w-1 h-1 rounded-full bg-[#8b7cff] animate-bounce [animation-delay:-0.15s]" />
+              <span className="w-1 h-1 rounded-full bg-[#8b7cff] animate-bounce" />
             </div>
           </div>
 
-          <div className="progress">
-            <div className="progressBar" />
+          {/* Loading Progress Bar Tracking */}
+          <div className="w-[210px] sm:w-[240px] h-[3px] mx-auto bg-white/10 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-gradient-to-r from-[#5865f2] to-[#9b7cff] rounded-full" 
+              style={{
+                animation: 'progressFill 2.8s cubic-bezier(0.4, 0, 0.2, 1) forwards'
+              }}
+            />
           </div>
         </div>
+
+        {/* Safe production injection for layout keyframe configs */}
+        <style dangerouslySetInnerHTML={{__html: `
+          @keyframes progressFill {
+            from { width: 0%; }
+            to { width: 100%; }
+          }
+          @keyframes scaleUp {
+            0% { transform: scale(0.3); opacity: 0; }
+            70% { transform: scale(1.05); }
+            100% { transform: scale(1); opacity: 1; }
+          }
+          @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+        `}} />
       </main>
     )
   }

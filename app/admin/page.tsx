@@ -61,7 +61,7 @@ export default function AdminPage() {
     loadProfiles()
   }, [])
 
-  const updateStatus = async (id: string, status: string) => {
+  const updateStatus = async (id: string, status: string, email: string, fullName: string) => {
     const { error } = await supabase
       .from('profiles')
       .update({ status })
@@ -70,6 +70,14 @@ export default function AdminPage() {
     if (error) {
       setMessage(`Update failed: ${error.message}`)
       return
+    }
+
+    if (status === 'approved') {
+      await fetch('/api/send-approval-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, fullName }),
+      })
     }
 
     loadProfiles()
@@ -111,13 +119,13 @@ export default function AdminPage() {
               </div>
               <div className="flex gap-2">
                 <button
-                  onClick={() => updateStatus(p.id, 'approved')}
+                  onClick={() => updateStatus(p.id, 'approved', p.email, p.full_name)}
                   className="rounded bg-green-600 text-white px-3 py-1.5 text-sm font-medium"
                 >
                   Approve
                 </button>
                 <button
-                  onClick={() => updateStatus(p.id, 'rejected')}
+                  onClick={() => updateStatus(p.id, 'rejected', p.email, p.full_name)}
                   className="rounded bg-red-600 text-white px-3 py-1.5 text-sm font-medium"
                 >
                   Reject

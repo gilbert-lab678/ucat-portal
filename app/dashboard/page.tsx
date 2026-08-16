@@ -68,9 +68,9 @@ export default function DashboardPage() {
         </div>
 
         <div className="rounded border border-zinc-200 dark:border-zinc-700 p-6">
-          <p className="text-zinc-600 dark:text-zinc-400">
-            Your UCAT portal is being built out — question banks, timed quizzes, and materials are coming soon.
-          </p>
+          <a href="/practice" className="text-blue-600 dark:text-blue-400 underline font-medium">
+            Question Bank →
+          </a>
         </div>
       </div>
     </div>

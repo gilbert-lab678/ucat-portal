@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { Sidebar } from '@/components/layout/sidebar'
@@ -27,6 +27,14 @@ type Lesson = {
 type TypeFilter = 'all' | 'video' | 'file'
 
 export default function MaterialsPage() {
+  return (
+    <Suspense fallback={null}>
+      <MaterialsPageInner />
+    </Suspense>
+  )
+}
+
+function MaterialsPageInner() {
   const [fullName, setFullName] = useState('')
   const [lessons, setLessons] = useState<Lesson[]>([])
   const [loading, setLoading] = useState(true)

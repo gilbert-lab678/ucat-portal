@@ -1,6 +1,8 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+export const dynamic = 'force-dynamic'
+
+import React, { useState, useRef, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from 'framer-motion';
 import { Mail, Lock, User, ArrowRight, ShieldCheck, Sparkles, Check, X, Eye, EyeOff, Loader2, Clock } from 'lucide-react';
@@ -11,6 +13,14 @@ import * as SupabaseLib from "@/lib/supabase";
 type AuthMode = 'login' | 'signup';
 
 export default function AuthPage() {
+  return (
+    <Suspense fallback={null}>
+      <AuthPageInner />
+    </Suspense>
+  );
+}
+
+function AuthPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   

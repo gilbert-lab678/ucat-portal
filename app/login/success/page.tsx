@@ -3,8 +3,8 @@
 import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 
-// We separate the layout into a Content component wrapped in a Suspense boundary.
-// Next.js requires a Suspense boundary whenever you use 'useSearchParams' on a client page.
+
+
 function SuccessContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -12,7 +12,7 @@ function SuccessContent() {
   const [progressWidth, setProgressWidth] = useState('0%')
 
   useEffect(() => {
-    // Safely pull the name and destination variables out using Next.js hooks
+
     const urlName = searchParams.get('name')
     const urlRole = searchParams.get('role')
 
@@ -20,12 +20,12 @@ function SuccessContent() {
       setFirstName(urlName)
     }
 
-    // Smoothly fill the loading animation bar layout right away
+
     const animationTimer = setTimeout(() => {
       setProgressWidth('100%')
     }, 50)
 
-    // Wait exactly 2.8s for the animation before routing to the dashboard destination
+
     const redirectTimer = setTimeout(() => {
       if (urlRole === 'admin') {
         router.push('/admin')
@@ -83,7 +83,7 @@ function SuccessContent() {
   )
 }
 
-// Main page export wrapped in Suspense to satisfy Next.js compilation requirements
+
 export default function LoginSuccess() {
   return (
     <Suspense fallback={

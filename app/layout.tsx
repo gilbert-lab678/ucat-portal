@@ -2,6 +2,7 @@ import './globals.css'
 import { Geist } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/theme-provider";
+import { CookieConsentBanner } from "@/components/cookie-consent-banner";
 
 const geist = Geist({subsets:['latin'], variable:'--font-sans'});
 
@@ -15,6 +16,7 @@ export default function RootLayout({
       <body className="bg-zinc-50 dark:bg-[#030408] text-zinc-900 dark:text-zinc-100 min-h-screen overflow-x-hidden transition-colors duration-200">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
           {children}
+          <CookieConsentBanner />
         </ThemeProvider>
       </body>
     </html>

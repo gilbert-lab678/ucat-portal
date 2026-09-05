@@ -18,8 +18,7 @@ export function Sidebar() {
 
   const navigationItems = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-    { name: 'Question Bank', href: '/practice', icon: BookOpen },
-    { name: 'Mock Exam', href: '/mock-exam', icon: GraduationCap },
+    { name: 'Mock Exam', href: '/mock-exam', icon: BookOpen },
     { name: 'Submit Marks', href: '/submit-marks', icon: CheckSquare },
     { name: 'Video and Materials', href: '/materials', icon: Video },
     { name: 'Analytics', href: '/analytics', icon: BarChart3 },

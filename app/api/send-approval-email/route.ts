@@ -10,6 +10,9 @@ export async function POST(request: NextRequest) {
       user: process.env.GMAIL_USER,
       pass: process.env.GMAIL_APP_PASSWORD,
     },
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 10000,
   })
 
   try {
@@ -22,6 +25,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true })
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    console.error('Email send failed:', error)
+    return NextResponse.json({ error: error.message || 'Unknown email error' }, { status: 500 })
   }
 }

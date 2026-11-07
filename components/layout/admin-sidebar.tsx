@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  LayoutDashboard, UserCheck, Layers, BookOpen, GraduationCap, Video, MessageSquare, Bell, ShieldCheck,
+  LayoutDashboard, UserCheck, Users, Layers, BookOpen, GraduationCap, Video, MessageSquare, Bell, ShieldCheck,
 } from 'lucide-react'
 
 export function AdminSidebar() {
@@ -12,6 +12,7 @@ export function AdminSidebar() {
   const navigationItems = [
     { name: 'Dashboard', href: '/admin', icon: LayoutDashboard, exact: true },
     { name: 'Approvals', href: '/admin/approvals', icon: UserCheck },
+    { name: 'Students', href: '/admin/students', icon: Users },
     { name: 'Class Codes', href: '/admin/classes', icon: Layers },
     { name: 'Mock Exams', href: '/admin/mocks', icon: GraduationCap },
     { name: 'Materials', href: '/admin/materials', icon: Video },

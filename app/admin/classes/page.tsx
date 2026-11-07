@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { AdminSidebar } from '@/components/layout/admin-sidebar'
 import { Navbar } from '@/components/layout/navbar'
-import { Plus, Users } from 'lucide-react'
+import { Plus, Users, Trash2 } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
@@ -24,6 +24,7 @@ export default function AdminClassesPage() {
   const [description, setDescription] = useState('')
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const router = useRouter()
   const supabase = createClient()
 
@@ -103,6 +104,66 @@ export default function AdminClassesPage() {
     loadData()
   }
 
+  const handleDelete = async (c: ClassCode) => {
+    setMessage('')
+
+    const { count: lessonCount } = await supabase
+      .from('lessons')
+      .select('id', { count: 'exact', head: true })
+      .eq('class_code_id', c.id)
+
+    const lessons = lessonCount || 0
+    const confirmed = window.confirm(
+      `Delete "${c.code}"?\n\n` +
+        `• ${lessons} lesson${lessons === 1 ? '' : 's'} (and their materials) will be deleted\n` +
+        `• ${c.student_count} student${c.student_count === 1 ? '' : 's'} will be removed from the class (their accounts and scores are not affected)\n\n` +
+        `This can't be undone.`
+    )
+    if (!confirmed) return
+
+    setDeletingId(c.id)
+
+    const { error: lessonError } = await supabase.from('lessons').delete().eq('class_code_id', c.id)
+    if (lessonError) {
+      setMessage(`Couldn't delete the class's lessons: ${lessonError.message}`)
+      setDeletingId(null)
+      return
+    }
+
+    const { error: studentError } = await supabase
+      .from('profiles')
+      .update({ class_code_id: null })
+      .eq('class_code_id', c.id)
+    if (studentError) {
+      setMessage(`Couldn't remove students from the class: ${studentError.message}`)
+      setDeletingId(null)
+      return
+    }
+
+    const { data: deleted, error: classError } = await supabase
+      .from('class_codes')
+      .delete()
+      .eq('id', c.id)
+      .select('id')
+
+    if (classError) {
+      setMessage(`Couldn't delete the class: ${classError.message}`)
+      setDeletingId(null)
+      return
+    }
+
+    if (!deleted || deleted.length === 0) {
+      setMessage(
+        "Couldn't delete the class. Your admin account probably doesn't have permission to delete from class_codes in Supabase."
+      )
+      setDeletingId(null)
+      return
+    }
+
+    setDeletingId(null)
+    loadData()
+  }
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-[#030408]">
@@ -166,22 +227,40 @@ export default function AdminClassesPage() {
             )}
 
             {classes.map((c) => (
-              <button
+              <div
                 key={c.id}
+                role="button"
+                tabIndex={0}
                 onClick={() => router.push(`/admin/classes/${c.id}`)}
-                className="text-left bg-white dark:bg-[#0a0d14] border border-zinc-200 dark:border-zinc-800/80 rounded-xl p-4 shadow-sm hover:border-indigo-400 dark:hover:border-indigo-500/50 transition-colors flex items-center justify-between"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') router.push(`/admin/classes/${c.id}`)
+                }}
+                className="cursor-pointer text-left bg-white dark:bg-[#0a0d14] border border-zinc-200 dark:border-zinc-800/80 rounded-xl p-4 shadow-sm hover:border-indigo-400 dark:hover:border-indigo-500/50 transition-colors flex items-center justify-between gap-3"
               >
-                <div>
+                <div className="min-w-0">
                   <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400">{c.code}</p>
                   {c.description && (
                     <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">{c.description}</p>
                   )}
                 </div>
-                <div className="flex items-center gap-1.5 text-xs text-zinc-400 dark:text-zinc-500 shrink-0">
-                  <Users className="h-3.5 w-3.5" />
-                  {c.student_count} student{c.student_count === 1 ? '' : 's'}
+                <div className="flex items-center gap-3 shrink-0">
+                  <div className="flex items-center gap-1.5 text-xs text-zinc-400 dark:text-zinc-500">
+                    <Users className="h-3.5 w-3.5" />
+                    {c.student_count} student{c.student_count === 1 ? '' : 's'}
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleDelete(c)
+                    }}
+                    disabled={deletingId === c.id}
+                    aria-label={`Delete ${c.code}`}
+                    className="p-1.5 rounded text-zinc-400 hover:text-rose-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-40 transition-colors"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
                 </div>
-              </button>
+              </div>
             ))}
           </div>
         </main>

@@ -1,11 +1,48 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { createClient } from '@/lib/supabase';
+
+const STUDENT_DASHBOARD = '/dashboard';
+const ADMIN_DASHBOARD = '/admin';
 
 export default function NotFound() {
   const cardRef = useRef<HTMLDivElement>(null);
   const screenRef = useRef<HTMLDivElement>(null);
+  const [dashboardHref, setDashboardHref] = useState<string>(STUDENT_DASHBOARD);
+
+  // Send admins to /admin and everyone else to the student dashboard
+  useEffect(() => {
+    let cancelled = false;
+    const supabase = createClient();
+
+    async function resolveDashboard() {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user || cancelled) return;
+
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('is_admin')
+          .eq('id', user.id)
+          .single();
+
+        if (!cancelled && profile?.is_admin) {
+          setDashboardHref(ADMIN_DASHBOARD);
+        }
+      } catch {
+        // If anything fails, fall back to the student dashboard
+      }
+    }
+
+    resolveDashboard();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -109,7 +146,7 @@ export default function NotFound() {
           </p>
           <Link
             className="cta"
-            href="/dashboard"
+            href={dashboardHref}
             style={{
               display: 'inline-flex',
               alignItems: 'center',

@@ -100,7 +100,8 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [searchFilter, setSearchFilter] = useState('')
   const [expandedComments, setExpandedComments] = useState<Record<string, boolean>>({})
-  const [examDate, setExamDate] = useState<string>('2026-11-15')
+  // Starts empty; the saved per-student date is loaded from Supabase in loadUser.
+  const [examDate, setExamDate] = useState<string>('')
   const [daysLeft, setDaysLeft] = useState<number | null>(null)
   const [upcomingLessons, setUpcomingLessons] = useState<Lesson[]>([])
   const [lessonHistory, setLessonHistory] = useState<Lesson[]>([])
@@ -109,8 +110,16 @@ export default function DashboardPage() {
   const router = useRouter()
 
   useEffect(() => {
-    if (!examDate) return
-    const diffDays = Math.ceil((new Date(examDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+    if (!examDate) {
+      setDaysLeft(null)
+      return
+    }
+    // Compare local midnight to local midnight so the count doesn't
+    // change depending on the time of day.
+    const exam = new Date(`${examDate}T00:00:00`)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const diffDays = Math.round((exam.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
     setDaysLeft(diffDays > 0 ? diffDays : 0)
   }, [examDate])
 
@@ -120,10 +129,15 @@ export default function DashboardPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/login'); return; }
 
-      const { data: profile } = await supabase.from('profiles').select('full_name, status').eq('id', user.id).single()
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name, status, exam_date')
+        .eq('id', user.id)
+        .single()
       if (!profile || profile.status !== 'approved') { router.push('/login'); return; }
 
       setFullName(profile.full_name)
+      setExamDate(profile.exam_date ?? '')
 
       const { data: lessonsData } = await supabase
         .from('lessons')
@@ -171,6 +185,22 @@ export default function DashboardPage() {
     }
     loadUser()
   }, [router])
+
+  // Saves the student's exam date to their own profile row.
+  const handleExamDateChange = async (value: string) => {
+    setExamDate(value)
+
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({ exam_date: value || null })
+      .eq('id', user.id)
+
+    if (error) console.error('Failed to save exam date:', error.message)
+  }
 
   const filteredHistory = lessonHistory.filter((lesson) =>
     (lesson.title || '').toLowerCase().includes(searchFilter.toLowerCase()) ||
@@ -351,7 +381,7 @@ export default function DashboardPage() {
                 <input
                   type="date"
                   value={examDate}
-                  onChange={(e) => setExamDate(e.target.value)}
+                  onChange={(e) => handleExamDateChange(e.target.value)}
                   className="bg-zinc-50 dark:bg-[#0d111a] border border-zinc-200 dark:border-zinc-800 rounded px-2 py-1 text-xs font-mono text-zinc-800 dark:text-zinc-300 focus:outline-none focus:border-indigo-500 transition-colors"
                 />
               </div>

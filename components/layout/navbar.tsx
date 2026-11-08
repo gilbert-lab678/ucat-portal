@@ -73,7 +73,7 @@ export function Navbar({ fullName, title = 'Dashboard Overview' }: NavbarProps) 
               <div className="fixed inset-0 z-40" onClick={() => setDropdownOpen(false)} />
               <div className="absolute right-0 mt-2 w-48 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#0d111a] shadow-2xl p-1.5 z-50 animate-in fade-in duration-100">
                 <button
-                  onClick={() => { setDropdownOpen(false); router.push('/settings?tab=security'); }}
+                  onClick={() => { setDropdownOpen(false); router.push('/reset-password'); }}
                   className="w-full flex items-center gap-2 px-3 py-2 text-xs rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 text-left font-medium cursor-pointer"
                 >
                   <Key className="h-3.5 w-3.5 text-zinc-400" />

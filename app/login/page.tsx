@@ -3,6 +3,7 @@
 export const dynamic = 'force-dynamic'
 
 import React, { useState, useRef, useEffect, Suspense } from 'react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from 'framer-motion';
 import { Mail, Lock, User, ArrowRight, ShieldCheck, Sparkles, Check, X, Eye, EyeOff, Loader2, Clock } from 'lucide-react';
@@ -171,7 +172,11 @@ function AuthPageInner() {
                   <div className="space-y-1">
                     <div className="flex justify-between items-center px-1">
                       <label className="text-[10px] font-bold text-zinc-400 tracking-widest uppercase">Password</label>
-                      {mode === 'login' && <a href="#forgot" className="text-[11px] font-medium text-sky-400 hover:underline">Forgot?</a>}
+                      {mode === 'login' && (
+                        <Link href="/forgot-password" className="text-[11px] font-medium text-sky-400 hover:underline">
+                          Forgot?
+                        </Link>
+                      )}
                     </div>
                     <div className={wrapClass}>
                       <Lock className="w-4 h-4 text-zinc-500" />
